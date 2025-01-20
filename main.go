@@ -9,10 +9,8 @@ func main() {
 	fmt.Println("lesson #1")
 	fmt.Println("starting Textio server")
 
-
-
 	fmt.Println("lesson #2")
-	
+
 	messagesFromDoris := []string{
 		"You doing anything later??",
 		"Did you get my last message?",
@@ -25,23 +23,20 @@ func main() {
 	// don't touch above this line
 
 	totalCost := costPerMessage * numMessages
-	
+
 	// don't touch above this line
 
 	fmt.Printf("Doris spent %.2f on text messages today\n")
 	fmt.Println(totalCost)
-	
-
 
 	fmt.Println("lesson #3")
 
 	var username string = "wagslane"
 	var password string = "20947382822"
-	
+
 	// don't touch above this line
 	fmt.Println("Authorization: Basic", username+":"+password)
 
-	
 	fmt.Println("lesson #4")
 
 	var smsSendingLimit int = 22
@@ -59,16 +54,15 @@ func main() {
 		username2,
 	)
 
-	
 	fmt.Println("lesson #5")
 	congrats := "Happy birthday"
 	fmt.Println(congrats)
-	
+
 	fmt.Println("lesson #6")
 
 	penniesPerText := 2
 	fmt.Printf("The type of penniesPerText is %T\n", penniesPerText)
-	
+
 	fmt.Println("lesson #7")
 	averageOpenRate, displayMessage := 0.23, "is the average open rate of your messages"
 
@@ -88,14 +82,14 @@ func main() {
 
 	fmt.Println("plan:", premiumPlanName)
 	fmt.Println("plan:", basicPlanName)
-	
+
 	fmt.Println("lesson #10")
 	const secondsInMinute = 60
 	const minutesInHour = 60
 	const secondsInHour = secondsInMinute * minutesInHour
 
 	fmt.Println("number of seconds in a hour:", secondsInHour)
-	
+
 	fmt.Println("lesson #11")
 	const name = "Soul Goodman"
 	const openRate = 30.5
@@ -103,20 +97,19 @@ func main() {
 	msg := fmt.Sprintf("Hi %s, your open rate is %.1f percent", name, openRate)
 
 	fmt.Println(msg)
-	
+
 	fmt.Println("lesson #12")
 	messageLen := 10
 	maxMessageLen := 20
 	fmt.Println("Trying to send a message of length:", messageLen, "and max length of:", maxMessageLen)
 
-	if (messageLen <= maxMessageLen) {
+	if messageLen <= maxMessageLen {
 		fmt.Println("Message sent")
 	} else {
 		fmt.Printf("Message not sent")
 	}
 
 	fmt.Println("lesson #13")
-	
 
 	fmt.Println(concat("Lane", " happy birthday!"))
 	fmt.Println(concat("Elon,", " hope that Tesla thing works out"))
@@ -137,14 +130,14 @@ func main() {
 	fmt.Println("lesson #16")
 	test(messageToSend{
 		phoneNumber: 12345678,
-		message: "Thanks for signing up",
+		message:     "Thanks for signing up",
 	})
 
 	fmt.Println("lesson #17")
 	test2(sender{
 		rateLimit: 10000,
 		user: user{
-			name: "name",
+			name:   "name",
 			number: 12345678,
 		},
 	})
@@ -157,13 +150,178 @@ func main() {
 
 	fmt.Println("lesson #19")
 	test4(sendingReport{
-		reportName: "FirstReport",
+		reportName:    "FirstReport",
 		numberOfSends: 100,
 	})
 	test4(birthdayMessage{
 		recipientName: "John Doe",
-		birthdayTime: time.Date(1994, 03, 21, 0, 0, 0, 0, time.UTC),
+		birthdayTime:  time.Date(1994, 03, 21, 0, 0, 0, 0, time.UTC),
 	})
+
+	fmt.Println("lesson #20")
+	test5(contractor{
+		name:         "John",
+		hourlyPay:    150,
+		hoursPerYear: 240,
+	})
+	test5(fullTime{
+		name:   "Arman",
+		salary: 40000,
+	})
+
+	fmt.Println("lesson #21")
+	e := email{
+		subscribed: true,
+		body:       "Hello world\n",
+	}
+	test6(e, e)
+
+	fmt.Println("lesson #22")
+	test7(email2{
+		toAddress:    "adsad@sd.s",
+		isSubscribed: true,
+		body:         "Hello",
+	})
+	test7(sms{
+		toPhoneNumber: "231232323",
+		isSubscribed:  false,
+		body:          "Hi",
+	})
+	test7(invalid{})
+}
+
+type invalid struct {
+}
+
+// cost implements expense.
+func (i invalid) cost() float64 {
+	panic("unimplemented")
+}
+
+func test7(e expense) {
+	address, cost := getExpenseReport(e)
+	switch v := e.(type) {
+	case email2:
+		fmt.Printf("Cost: %v\n", cost)
+		fmt.Printf("Email Address(%T): %s\n", e, address)
+		fmt.Printf("Message: %s\n", v.body)
+		fmt.Println("=============================")
+	case sms:
+		fmt.Printf("Cost: %v\n", cost)
+		fmt.Printf("Phone number(%T): %s\n", e, address)
+		fmt.Printf("Message: %s\n", v.body)
+		fmt.Println("=============================")
+	default:
+		fmt.Printf("Invalid Report (%T)", e)
+		fmt.Println("=============================")
+	}
+}
+
+func getExpenseReport(e expense) (string, float64) {
+	email, ok := e.(email2)
+	if ok {
+		return email.toAddress, email.cost()
+	}
+	sms, ok := e.(sms)
+	if ok {
+		return sms.toPhoneNumber, sms.cost()
+	}
+
+	return "", 0.0
+}
+
+func (s sms) cost() float64 {
+	if !s.isSubscribed {
+		return float64(len(s.body)) * 0.01
+	}
+
+	return float64(len(s.body)) * 0.03
+}
+
+func (e email2) cost() float64 {
+	if e.isSubscribed {
+		return float64(len(e.body)) * 0.01
+	}
+
+	return float64(len(e.body)) * 0.05
+}
+
+type sms struct {
+	toPhoneNumber string
+	isSubscribed  bool
+	body          string
+}
+type email2 struct {
+	toAddress    string
+	isSubscribed bool
+	body         string
+}
+
+func test6(e expense, p print) {
+	fmt.Printf("Cost's email: %v\n", e.cost())
+	p.print()
+	fmt.Println("=================================================")
+}
+
+func (e email) cost() float64 {
+	if !e.subscribed {
+		return float64(len(e.body)) * 0.05
+	}
+	return float64(len(e.body)) * 0.01
+}
+
+func (e email) print() {
+	fmt.Printf(e.body)
+}
+
+type expense interface {
+	cost() float64
+}
+
+type print interface {
+	print()
+}
+
+type email struct {
+	subscribed bool
+	body       string
+}
+
+type employee interface {
+	getName() string
+	getSalary() int
+}
+
+type contractor struct {
+	name         string
+	hourlyPay    int
+	hoursPerYear int
+}
+
+type fullTime struct {
+	name   string
+	salary int
+}
+
+func test5(c employee) {
+	fmt.Printf("%s's salary equals %d\n", c.getName(), c.getSalary())
+	fmt.Println("================================================")
+}
+
+func (c contractor) getName() string {
+	return c.name
+}
+
+func (c contractor) getSalary() int {
+	return (c.hourlyPay * c.hoursPerYear) / 12
+}
+
+func (ft fullTime) getName() string {
+	return ft.name
+}
+
+func (ft fullTime) getSalary() int {
+	return ft.salary
 }
 
 func test4(m message) {
@@ -172,7 +330,7 @@ func test4(m message) {
 }
 
 func sendMessage(msg message) {
-	fmt.Println(msg.getMessage()) 
+	fmt.Println(msg.getMessage())
 }
 
 type message interface {
@@ -180,7 +338,7 @@ type message interface {
 }
 
 type birthdayMessage struct {
-	birthdayTime time.Time
+	birthdayTime  time.Time
 	recipientName string
 }
 
@@ -189,7 +347,7 @@ func (bm birthdayMessage) getMessage() string {
 }
 
 type sendingReport struct {
-	reportName string
+	reportName    string
 	numberOfSends int
 }
 
@@ -202,8 +360,8 @@ type authenticationInfo struct {
 	password string
 }
 
-func (user authenticationInfo) getBasicAuth() string{
-	
+func (user authenticationInfo) getBasicAuth() string {
+
 	return fmt.Sprintf("Authorization: Basic %s:%s", user.username, user.password)
 	// return "Authorization: Basic " + user.username + ":" + user.password
 }
@@ -226,15 +384,16 @@ type sender struct {
 }
 
 type user struct {
-	name string
+	name   string
 	number int
 }
 
 type messageToSend2 struct {
-	message string
-	sender user
+	message   string
+	sender    user
 	recipient user
 }
+
 func canSendMessage(mToSend messageToSend2) bool {
 	if mToSend.message == "" {
 		return false
@@ -250,7 +409,7 @@ func canSendMessage(mToSend messageToSend2) bool {
 }
 
 type messageToSend struct {
-	message string
+	message     string
 	phoneNumber int
 }
 
