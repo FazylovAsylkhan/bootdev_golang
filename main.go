@@ -188,6 +188,60 @@ func main() {
 		body:          "Hi",
 	})
 	test7(invalid{})
+	
+	fmt.Println("lesson #23")
+	test8("Thanks for coming in to our flower shop.", "We hope you enjoyed your gift.")
+	test8("Thanks for joinging us.", "Have a good day.")
+	
+	fmt.Println("lesson #24")
+	test9(1.4, "+1 (435) 555 0923")
+	test9(2.1, "+2 (702) 555 3452")
+	test9(1.4, "+1 (801) 555 7456")
+	test9(1.4, "+1 (435) 555 6445")
+
+}
+
+func getSMSErrorString(cost float64, recipient string) string {
+	return fmt.Sprintf("SMS that costs $%.2f to be sent to '%s' can not be sent", cost, recipient) 
+}
+
+func test9(cost float64, recipient string) {
+	s := getSMSErrorString(cost, recipient)
+	fmt.Println(s)
+	fmt.Println("===================================")
+}
+
+func test8(msgToCustomer, msgToSpouse string) {
+	defer fmt.Println("========")
+	fmt.Println("Message for Customer:", msgToCustomer)
+	fmt.Println("Message for Spouse:", msgToSpouse)
+	totalCost, err := sendSMSToCouple(msgToCustomer, msgToSpouse)
+	if (err != nil) {
+		fmt.Println("Error:", err)
+		return
+	}
+	fmt.Printf("Total cost: $%.4f\n", totalCost)
+}
+
+func sendSMSToCouple(msgToCustomer, msgToSpouse string) (float64, error) {
+	costForCustomer, err := sendSMS(msgToCustomer)
+	if err != nil {
+		return 0.0, err
+	}
+	costForSpose, err := sendSMS(msgToSpouse)
+	if err != nil {
+		return 0.0, err
+	}
+	return costForCustomer + costForSpose, nil
+}
+
+func sendSMS(message string) (float64, error) {
+	const maxTextLen = 25
+	const costPerChar = .0002
+	if len(message) > maxTextLen {
+		return 0.0, fmt.Errorf("can't send texts over %v characters", maxTextLen)
+	}
+	return costPerChar * float64(len(message)), nil
 }
 
 type invalid struct {
@@ -212,7 +266,7 @@ func test7(e expense) {
 		fmt.Printf("Message: %s\n", v.body)
 		fmt.Println("=============================")
 	default:
-		fmt.Printf("Invalid Report (%T)", e)
+		fmt.Printf("Invalid Report (%T)\n", e)
 		fmt.Println("=============================")
 	}
 }
