@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"time"
 )
@@ -196,9 +197,177 @@ func main() {
 	fmt.Println("lesson #24")
 	test9(1.4, "+1 (435) 555 0923")
 	test9(2.1, "+2 (702) 555 3452")
-	test9(1.4, "+1 (801) 555 7456")
-	test9(1.4, "+1 (435) 555 6445")
+	test9(32.10, "+1 (801) 555 7456")
+	test9(14.40, "+1 (435) 555 6445")
 
+	fmt.Println("lesson #25")
+	test10(10.00, 0.00)
+	test10(10.00, 2.00)
+
+	fmt.Println("lesson #26")
+	test11(10.00, 0.00)
+	test11(10.00, 2.00)
+
+	fmt.Println("lesson #27")
+	test12(12);
+	test12(5)
+	test12(1)
+	
+	fmt.Println("lesson #28")
+	test13(9)
+	test13(50)
+
+	fmt.Println("lesson #29")
+	test14(1.1, 5)
+	test14(1.3, 10)
+
+	fmt.Println("lesson #30")
+	fizzbuzz()
+
+	fmt.Println("lesson #31")
+	test15(15)
+}
+
+func test15(max int) {
+	fmt.Printf("Primes up to %v:\n", max)
+	printPrimes(max)
+	fmt.Println("========================================")
+}
+
+func printPrimes(max int) {
+	for n := 2; n < max + 1; n++ {
+		if n == 2 {
+			fmt.Println(n)
+			continue
+		} 
+		if n % 2 == 0 {
+			continue
+		}
+		isPrime := true 
+		for i := 3; i * i < n + 1; i++ {
+			if n % i == 0 {
+				isPrime = false
+				break
+			}
+		}
+		if !isPrime {
+			continue
+		}
+		fmt.Println(n)
+	}
+}
+
+func fizzbuzz() {
+	for i := 1; i <= 100; i++ {
+		if i % 3 == 0 && i % 5 == 0 {
+			fmt.Println("fizzbuzz")
+		} else if i % 3 == 0 {
+			fmt.Println("fizz")
+		} else if i % 5 == 0 {
+			fmt.Println("buzz")
+		} else {
+			fmt.Println(i)
+		}
+	}
+	fmt.Println("=========================")
+}
+
+func test14(costMultiplier float64, maxCostInPennies int) {
+	fmt.Printf("Multiplier: %.1f\n", costMultiplier)
+	fmt.Printf("Max cost: %v\n", maxCostInPennies)
+	maxMessages := getMaxMessagesToSend(costMultiplier, maxCostInPennies)
+	fmt.Printf("Max messages you can send: %v\n", maxMessages)
+	fmt.Println("================================================")
+}
+
+func getMaxMessagesToSend(costMultiplier float64, maxCostInPennies int) int {
+	actualCostInPennies := 1.0
+	maxMessagesToSend := 0
+	for actualCostInPennies <= float64(maxCostInPennies) {
+		maxMessagesToSend++
+		actualCostInPennies *=costMultiplier
+	}
+	return maxCostInPennies
+}
+
+func test13(thresh float64) {
+	fmt.Printf("Threshold: %.2f\n", thresh)
+	max := maxMessages(thresh)
+	fmt.Printf("Maximum messages that can be sent: = %v\n", max)
+}
+
+func maxMessages(thresh float64) int {
+	totalCost := 0.00
+	for i:= 0; ; i++ {
+		totalCost += 1.00 + (0.01 * float64(i))
+		if totalCost > thresh {
+			return i
+		}
+	}
+
+}
+
+func bulkSend(numMessage int) float64 {
+	cost := 0.00
+	for i := 0; i < numMessage; i++ {
+		cost += 1.00 + (0.01 * float64(i))
+	}
+	return cost
+}
+
+func test12(numMessages int) {
+	fmt.Printf("Sending %v messages\n", numMessages)
+	cost := bulkSend(numMessages)
+	fmt.Printf("Bulk send complete! Cost =%.2f\n", cost)
+	fmt.Println("===========================================")
+}
+
+func test11(x, y float64) {
+	defer fmt.Println("==========================")
+	fmt.Printf("Dividing %.2f by %.2f ...\n", x,y)
+	quotient, err := divide2(x,y)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Printf("Quotient: %.2f\n", quotient)
+}
+
+func divide2(x, y float64) (float64, error) {
+	if y == 0 {
+		return 0, errors.New("No dividing by 0")
+	}
+	return x / y, nil
+}
+
+func test10(dividend, divisor float64) {
+	fmt.Printf("Dividing %v by %v ...\n", dividend, divisor)
+	quotient, err := divide(dividend, divisor)
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println("=================================")
+		return
+	}
+	fmt.Printf("Quotient: %v\n", quotient)
+	fmt.Println("=================================")
+}
+
+type divideError struct {
+	dividend float64
+}
+
+func divide(dividend, divisor float64) (float64, error) {
+	if divisor == 0 {
+		return 0.0, divideError {
+			dividend: dividend,
+		}
+	}
+	 
+	return dividend/divisor, nil
+}
+
+func (de divideError) Error() string {
+	return fmt.Sprintf("can not divide %v by zero", de.dividend)
 }
 
 func getSMSErrorString(cost float64, recipient string) string {
