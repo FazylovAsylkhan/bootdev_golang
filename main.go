@@ -226,6 +226,428 @@ func main() {
 
 	fmt.Println("lesson #31")
 	test15(15)
+
+	fmt.Println("lesson #32")
+	send("Bob", 0)
+	send("Alice", 1)
+	send("Mangalam", 2)
+	send("Ozgur", 3)
+
+	fmt.Println("lesson #33")
+	send2("Bob", 0, planFree)
+	send2("Alice", 1, "some plan")
+	send2("Mangalam", 2, planPro)
+	send2("Ozgur", 3, planFree)
+
+	fmt.Println("lesson #34")
+	test16([]string{
+		"Welcome to the movies!",
+		"Enjoy your popcorn!",
+		"Please don't talk during the movie!",
+	})
+
+	fmt.Println("lesson #35")
+	test17(0.2, 0.2, 0.6)
+
+	fmt.Println("lesson #36")
+	test18([]cost{
+		{0, 0.21},
+		{
+			day: 2,
+			value: 0.22,
+		},
+		{
+			day: 2,
+			value: 0.3,
+		},
+		{
+			day: 5,
+			value: 0.5,
+		},
+	})
+
+	fmt.Println("lesson #37")
+	test19(10, 10)
+
+	fmt.Println("lesson #38")
+	test20(
+		[]string{
+		"crap",
+		"shoot",
+		"dang",
+		"frick",
+		},
+		[]string{
+			"hey",
+			"there",
+			"john",
+		},
+	)
+	test20(
+		[]string{
+		"crap",
+		"shoot",
+		"dang",
+		"frick",
+		},
+		[]string{
+			"hey",
+			"shoot",
+			"john",
+		},
+	)
+
+	fmt.Println("lesson #38")
+	test21(
+		[]string {
+			"John",
+			"Bob",
+			"Jill",
+		},
+		[]int {
+			12345678,
+			12345678,
+			12345678,
+		},
+	)
+	test21(
+		[]string {
+			"John",
+			"Bob",
+			"Jill",
+		},
+		[]int {
+			12345678,
+			12345678,
+		},
+	)
+
+	fmt.Println("lesson #39")
+	users3 := map[string]user3{
+		"John": {
+			name: "John",
+			number: 221231,
+			scheduledForDeletion: false,
+		},
+		"Bob": {
+			name: "Bob",
+			number: 221231,
+			scheduledForDeletion: true,
+		},
+	}
+	test22(users3, "John")
+	test22(users3, "Bob")
+	test22(users3, "somebody")
+
+	fmt.Println("lesson #40")
+	test23(
+		[]string{"aa", "bb", "aa", "bb", "cc", "12", "12", "1"},
+		[]string{"aa", "bb", "cc", "12", "1"}, 
+	)
+
+	fmt.Println("lesson #41")
+	test24([]string{"Bob", "John"}, 'B', "Bob")
+	
+}
+
+func getNameCounts(names []string) map[rune]map[string]int {
+	nameCounts := make(map[rune]map[string]int)
+	for _, name := range names {
+		if name == "" {
+			continue
+		}
+		firstChar := rune(name[0])
+		_, ok := nameCounts[firstChar]
+		if !ok {
+			nameCounts[firstChar] = make(map[string]int)
+		}
+		nameCounts[firstChar][name]++
+	}
+
+	return nameCounts
+}
+
+func test24(names []string, initial rune, name string) {
+	fmt.Printf("Generating counts for %v names...\n", len(names))
+
+	nameCounts := getNameCounts(names)
+	count := nameCounts[initial][name]
+	fmt.Printf("Count for [%c][%s]: %d\n", initial, name, count)
+	fmt.Println("================================")
+}
+
+func getCounts(userIDs []string) map[string]int {
+	counts := make(map[string]int)
+	for _, userID := range userIDs {
+		count := counts[userID]
+		count++
+		counts[userID] = count
+	}
+
+	return counts
+}
+
+func test23(userIDs, ids []string) {
+	fmt.Printf("Generating counts for %v user IDs...\n", len(userIDs))
+
+	counts := getCounts(userIDs)
+	fmt.Println("Counts from select IDs:\n")
+	for _, id := range ids {
+		fmt.Printf("- %s: %d\n", id, counts[id])
+	}
+	fmt.Println("===================================================")
+}
+
+func test22(users map[string]user3, name string) {
+	fmt.Printf("Attempting to delete %s\n", name)
+	defer fmt.Println("=========================\n")
+	deleted, err := deleteIfNecessary(users, name)
+	if err != nil {
+		fmt.Printf("Error: %s\n", err)
+	}
+	if deleted {		
+		fmt.Printf("Deleted: %v\n", name)
+	} else {
+		fmt.Printf("Did not delete: %s\n", name)
+	}
+}
+func deleteIfNecessary(users map[string]user3, name string) (deleted bool, err error) {
+	user, ok := users[name]
+	if !ok {
+		return false, errors.New("not found")
+	}
+	if user.scheduledForDeletion {
+		delete(users, name)
+		return true, nil
+	}
+
+	return false, nil
+}
+
+type user3 struct {
+	name string
+	number int
+	scheduledForDeletion bool
+}
+
+func getUserMap(names []string, phoneNumbers []int) (map[string]user2, error) {
+	if len(names) != len(phoneNumbers) {
+		return nil, errors.New("Invalid sizes")
+	}
+	userMap := make(map[string]user2)
+	for i, name := range names {
+		userMap[name] = user2{
+			name: name,
+			phoneNumber: phoneNumbers[i],
+		}
+	}
+
+	return userMap, nil
+}
+
+type user2 struct {
+	name string
+	phoneNumber int
+}
+
+func test21(names []string, phoneNumbers []int) {
+	fmt.Println("Creating map...\n")
+	defer fmt.Println("========================================")
+	users, err := getUserMap(names, phoneNumbers)
+
+	if err != nil {
+		fmt.Printf("Error: %v", err)
+		return
+	}
+
+	for _, name := range names {
+		fmt.Printf("key: %v, value:\n", name)
+		fmt.Println(" - name:", users[name].name)
+		fmt.Println(" - number:", users[name].phoneNumber)
+
+	}
+}
+
+func indexOfFirstBadWord(msg []string, badWords []string) int {
+	for i, badWord := range badWords {
+		for _, message := range msg {
+			if badWord == message {
+				return i
+			}
+		}
+	}
+
+	return -1
+}
+
+func test20(msg []string, badWords []string) {
+	i := indexOfFirstBadWord(msg, badWords)
+	fmt.Printf("Scanning message: %v for bad words:\n", msg)
+	for _, badWord := range badWords {
+		fmt.Println("-", badWord)
+	}
+	fmt.Printf("Index: %v\n", i)
+	fmt.Println("====================================================")
+}
+
+func createMatrix(rows, cols int) [][]int {
+	matrix := make([][]int, 0)
+	for i := 0; i < rows; i++ {
+		row := make([]int, 0)
+		for j := 0; j < cols; j++ {
+			row = append(row, i*j)
+		}
+		matrix = append(matrix, row)
+	}
+
+	return matrix
+}
+
+func test19(rows, cols int) {
+	fmt.Printf("Creating %v x %v matrix...\n", rows, cols)
+	matrix := createMatrix(rows, cols)
+	for i := 0; i < len(matrix); i++ {
+		fmt.Println(matrix[i])
+	}
+	fmt.Println("===== END REPORT =====")
+}
+
+type cost struct {
+	day int
+	value float64
+}
+
+func getCostsByDay(costs []cost) []float64 {
+	costsByDay := []float64{}
+	for i := 0; i < len(costs); i++ {
+		cost := costs[i]
+		for cost.day >= len(costsByDay) {
+			costsByDay = append(costsByDay, 0.0)
+		}
+		costsByDay[cost.day] += cost.value
+	}
+
+	return costsByDay
+}
+
+func test18(costs []cost) {
+	fmt.Printf("Creating daily buckets for %v costs...\n", len(costs))
+	costsByDay := getCostsByDay(costs)
+	fmt.Println("Costs by day:")
+	for i :=0; i < len(costsByDay); i++ {
+		fmt.Printf("- Day %v: %v\n", i, costsByDay[i])
+	}
+	fmt.Println("===== END REPORT =====")
+
+}
+
+func sum(nums ...float64) float64 {
+	total := 0.0
+	for i := 0; i < len(nums); i++ {
+		total += nums[i]
+	}
+
+	return total
+}
+
+func test17(nums ...float64) {
+	total := sum(nums...)
+	fmt.Printf("Summing %v costs...\n", len(nums))
+	fmt.Printf("Bill for the month: %.2f\n", total)
+	fmt.Println("===== END REPORT =====")
+}
+
+func getMessageCosts(messages []string) []float64 {
+	costs := make([]float64, len(messages))
+	for i := 0; i < len(messages); i++ {
+		message := messages[i]
+		cost := float64(len(message)) * 0.01
+		costs[i] = cost
+	}
+
+	return costs
+}
+
+func test16(messages []string) {
+	costs := getMessageCosts(messages)
+	fmt.Println("Messages:")
+	for i := 0; i < len(messages); i++ {
+		fmt.Printf(" - %v\n", messages[i])
+	}
+	fmt.Println("Costs:")
+	for i := 0; i < len(costs); i++ {
+		fmt.Printf(" - %v\n", costs[i])
+	}
+	fmt.Println("===== END REPORT =====")
+}
+
+const (
+	planFree = "free"
+	planPro = "pro"
+)
+
+func getMessageWithRetriesForPlan(plan string) ([]string, error) {
+	allMessages := getMessageWithRetries()
+	if (plan == planPro) {
+		return allMessages[:], nil
+	}
+	if (plan == planFree) {
+		return allMessages[0:2], nil
+	}
+
+	return nil, errors.New("unsupported plan")
+}
+
+
+func send2(name string, doneAt int, plan string) {
+	defer fmt.Println("====================================")
+	fmt.Printf("sending to %v...", name)
+	fmt.Println()
+
+	messages, err := getMessageWithRetriesForPlan(plan)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+	for i := 0; i < len(messages); i++ {
+		msg := messages[i]
+		fmt.Printf(`sending: "%v"`, msg)
+		fmt.Println()
+		if i == doneAt {
+			fmt.Println("they responded!")
+			break
+		}
+		if i == len(messages) - 1 {
+			fmt.Println("complete failure")
+		}
+	}
+}
+
+func getMessageWithRetries() [3]string {
+	return [3]string{
+		"click here to sign up",
+		"pretty please click here",
+		"we beg you to sign up",
+	}
+}
+
+func send(name string, doneAt int) {
+	fmt.Printf("sending to %v...", name)
+	fmt.Println()
+
+	messages := getMessageWithRetries()
+	for i := 0; i < len(messages); i++ {
+		msg := messages[i]
+		fmt.Printf(`sending: "%v"`, msg)
+		fmt.Println()
+		if i == doneAt {
+			fmt.Println("they responded!")
+			break
+		}
+		if i == len(messages) - 1 {
+			fmt.Println("complete failure")
+		}
+	}
 }
 
 func test15(max int) {
