@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -347,7 +348,254 @@ func main() {
 
 	fmt.Println("lesson #41")
 	test24([]string{"Bob", "John"}, 'B', "Bob")
+
+	fmt.Println("lesson #42")
+	messages := []string{
+		"Thanks for getting back to me.",
+		"Great to see you again.",
+	}
+	test25(messages, addGreeting)
+	test25(messages, addSignature)
+
+	fmt.Println("lesson #43")
+	dbErrors := []error {
+		errors.New("Out of memory"),
+		errors.New("cpu is pegged"),
+	}
+	test26("Errors on database server", dbErrors, colonDelimit)
+	test26("Errors on database server", dbErrors, commaDelimit)
+
+	fmt.Println("lesson #44")
+	users := map[string]user4{
+		"john": {
+			name: "john",
+			number: 34234234,
+			admin: true,
+		},
+		"elon": {
+			name: "elon",
+			number: 32434265,
+			admin: false,
+		},
+	}
+	test27(users, "john")
+	test27(users, "elon")
+	test27(users, "somebody")
+
+	fmt.Println("lesson #45")
+	test28([]emailBill{
+		{45},
+		{32},
+		{43},
+		{12},
+		{34},
+		{54},
+	})
+
+	fmt.Println("lesson #46")
+	test29([]string{
+		"Here's Johnny!",
+		"Go ahead, make my day",
+		"You had me at hello",
+		"There's no place like home",
+	})
+
+	fmt.Println("lesson #47")
+	test30(Message{
+		"Lane",
+		"Textio is getting better everyday",
+	})
+
+	fmt.Println("lesson #48")
+	test31([]string{
+		"Allian is going to heck",
+	})
+
+	fmt.Println("lesson #49")
+	email := email3{
+		"This is my first draft",
+		"sandra@mailio-test.com",
+		"bullock@mailio-test.com",
+	}
+	test32(&email, "This is my second draft")
+}
+
+func test32(e *email3, newMessage string) {
+	fmt.Println("-- before --")
+	e.print()
+	fmt.Println("-- end before --")
+	e.setMessage(newMessage)
+	fmt.Println("-- after --")
+	e.print()
+	fmt.Println("-- end after --")
+}
+
+func (e *email3) setMessage(newMessage string) {
+	e.message = newMessage
+}
+
+func (e email3) print() {
+	fmt.Printf("Message: %s\n", e.message)
+	fmt.Printf("From address: %s\n", e.fromAddress)
+	fmt.Printf("To address: %s\n", e.toAddress)
+}
+
+type email3 struct {
+	message string
+	fromAddress string
+	toAddress string
+}
+
+func removeProfanity(message *string) {
+	messageVal := *message
+	messageVal = strings.ReplaceAll(messageVal, "dang", "****")
+	messageVal = strings.ReplaceAll(messageVal, "shoot", "*****")
+	messageVal = strings.ReplaceAll(messageVal, "heck", "****")
+	*message = messageVal
+}
+
+func test31(messages []string) {
+	for _, message := range messages {
+		removeProfanity(&message)
+		fmt.Println(message)
+	}
+}
+
+type Message struct {
+	Recipient string
+	Text string
+}
+
+func test30(msg Message) {
+	defer fmt.Println("==================")
+	sendMessage2(msg)
+}
+
+func sendMessage2(m Message) {
+	fmt.Printf("To: %v\n", &m.Recipient)
+	fmt.Printf("Message: %v\n", &m.Text)
+	fmt.Printf("To: %v\n", m.Recipient)
+	fmt.Printf("Message: %v\n", m.Text)
+}
+
+func printReports(messages []string) {
+	for _, message := range messages {
+		printCostReport(func (msg string) int {
+			return len(msg) * 2
+		}, message)
+	}
+}
+
+func printCostReport(costCalculator func(string) int, message string) {
+	cost := costCalculator(message)
+	fmt.Printf(`Message: "%s" Cost: %v cents`, message, cost)
+	fmt.Println()
+}
+
+func test29(messages []string) {
+	defer fmt.Println("===================================")
+	printReports(messages)
+}
+
+func adder() func(int) int {
+	sum := 0
+	return func(x int) int{
+		sum += x
+
+		return sum
+	}
+}
+
+type emailBill struct {
+	costInPennies int
+}
+
+func test28(bills []emailBill) {
+	defer fmt.Println("============================")
+	countAdder, costAdder := adder(), adder()
+
+	for _, bill := range bills {
+		fmt.Printf("You've sent %d emails and it has cost you %d cents\n", countAdder(1), costAdder(bill.costInPennies))
+	}
+}
+
+const (
+	logDeleted = "user deleted"
+	logNotFound = "user not found"
+	logAdmin = "adminDeleted"
+)
+
+func test27(users map[string]user4, name string) {
+	fmt.Printf("Attempting to delete %s...\n", name)
+	defer fmt.Println("===========================")
+	log := logAndDelete(users, name)
+	fmt.Println("Log:", log)
+}
+
+func logAndDelete(users map[string]user4, name string) (log string) {
+	defer delete(users, name)
+	user, ok := users[name]
+	if !ok {
+		return logNotFound
+	}
+	if user.admin {
+		return logAdmin
+	}
 	
+	return logDeleted
+}
+
+type user4 struct {
+	name string
+	number int
+	admin bool
+}
+
+func getLogger(formatter func(string, string) string) func(string, string) {
+	return func (a, b string) {
+		fmt.Println(formatter(a, b))
+	}
+}
+
+func test26(first string, errors []error, formatter func(string, string) string) {
+	defer fmt.Println("===============================")
+	logger := getLogger(formatter)
+	fmt.Println("Logs:")
+	for _, err := range errors {
+		logger(first, err.Error())
+	}
+}
+
+func colonDelimit(first, second string) string {
+	return first + ": " + second
+}
+
+func commaDelimit(first, second string) string {
+	return first + ", " + second
+}
+
+func test25(messages []string, formatter func(string) string) {
+	fmt.Println("===========================\n")
+	for _, message := range messages {
+		fmt.Printf("* %s -> %s\n", message, formatter(message))
+	}
+}
+
+func getFormattedMessages(messages []string, formatter func(string) string) []string {
+	formattedMessages := []string{}
+	for _, message := range messages {
+		formattedMessages = append(formattedMessages, formatter(message))
+	}
+
+	return formattedMessages
+}
+
+func addSignature(message string) string {
+	return message + " King regards."
+}
+
+func addGreeting(message string) string {
+	return "Hello! " + message
 }
 
 func getNameCounts(names []string) map[rune]map[string]int {
