@@ -3,7 +3,9 @@ package main
 import (
 	"errors"
 	"fmt"
+	"sort"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -418,6 +420,344 @@ func main() {
 		"bullock@mailio-test.com",
 	}
 	test32(&email, "This is my second draft")
+
+	fmt.Println("lesson #50")
+	test33("Hi, John")
+	test33("Hi, Nick")
+
+	fmt.Println("lesson #51")
+	test34(3)
+	test34(4)
+	test34(5)
+
+	fmt.Println("lesson #52")
+	test35("Hello John, tell Kathy I said hi", "Whazzup bruther")
+	test35("I find that hard to believe.", "when? I don't know if ...")
+	test35("She says hi!", "Yeah its tomorrow. So we're good")
+
+	fmt.Println("lesson #53")
+	test36(3)
+	test36(4)
+	test36(5)
+	test36(6)
+
+	fmt.Println("lesson #54")
+	test37(10)
+	test37(5)
+	test37(20)
+	test37(13)
+
+	fmt.Println("lesson #55")
+	test38()
+
+	fmt.Println("lesson #56")
+	sc := safeCounter{
+		counts: make(map[string]int),
+		mux: &sync.Mutex{},
+	}
+	test39(sc, []emailTest{
+		{
+			email: "john@example.com",
+			count: 23,
+		},
+		{
+			email: "john@example.com",
+			count: 29,
+		},
+		{
+			email: "jill@example.com",
+			count: 31,
+		},
+		{
+			email: "jill@example.com",
+			count: 67,
+		},
+	})
+
+	fmt.Println("lesson #57")
+	test40([] int {1,2,3,4,5})
+	test40([] string {"hi","long","answer","something","Bye"})
+	test40([] struct{
+		key int
+		val string
+	}{
+		{1, "hi"},
+		{2, "long"},
+	})
+}
+
+func getLast[T any](s []T) T {
+	if len(s) == 0 {
+		var zeroVal T
+		return zeroVal
+	}
+	return s[len(s) - 1]
+}
+
+func test40[T any](arr []T) {
+	defer fmt.Println("---")
+	fmt.Printf("Getting last email from slice of length: %d\n", len(arr))
+
+	for i, elem := range arr {
+		fmt.Printf("Item #%d: %v\n", i+1, elem)
+	}
+	lastItem := getLast(arr)
+	fmt.Printf("Last item in list: %v\n", lastItem)
+
+}
+
+type email4 struct {
+	message string
+	senderEmail string
+	recipientEmail string
+}
+
+type payment struct {
+	amount int
+}
+
+type safeCounter struct {
+	counts map[string]int
+	mux *sync.Mutex
+}
+
+func (sc safeCounter) inc(key string) {
+	sc.mux.Lock()
+	defer sc.mux.Unlock()
+	sc.slowIncrement(key)
+}
+
+func (sc safeCounter) val(key string) int {
+	sc.mux.Lock()
+	defer sc.mux.Unlock()
+	return sc.counts[key]
+}
+
+func (sc safeCounter) slowIncrement(key string) {
+	tempCounter := sc.counts[key]
+	time.Sleep(time.Millisecond)
+	tempCounter++
+	sc.counts[key] = tempCounter
+}
+
+type emailTest struct {
+	email string
+	count int
+}
+
+func test39(sc safeCounter, emailTests []emailTest) {
+	emails := make(map[string]struct{})
+
+	var wg sync.WaitGroup
+	for _, emailT := range emailTests {
+		emails[emailT.email] = struct{}{}
+		for i := 0; i < emailT.count; i++ {
+			wg.Add(1)
+			go func(emailT emailTest) {
+				sc.inc(emailT.email)
+				wg.Done()
+			}(emailT)
+		}
+	}
+	wg.Wait()
+
+	emailsSorted := make([] string, 0, len(emails))
+	for email := range emails {
+		emailsSorted = append(emailsSorted, email)
+	}
+	sort.Strings(emailsSorted)
+
+	for _, email := range emailsSorted {
+		fmt.Printf("Email: %s has %d emails\n", email, sc.val(email))
+	}
+	fmt.Println("=======================================")
+}
+
+func saveBackups(snapshotTicker, saveAfter <-chan time.Time) {
+	for {
+		select {
+		case <-snapshotTicker:
+			takeSnapshot()
+		case <-saveAfter:
+			saveSnapshot()
+			return
+		default:
+			waitForData()
+			time.Sleep(time.Millisecond * 10)
+		}
+	}
+}
+
+func takeSnapshot() {
+	fmt.Println("Taking a backup snapshot...")
+}
+
+func saveSnapshot() {
+	fmt.Println("All backups saved!")
+}
+
+func waitForData() {
+	fmt.Println("Nothing to do, waiting...")
+}
+
+func test38() {
+	snapshotTicker := time.Tick(100 * time.Millisecond)
+	saveAfter := time.After(200 * time.Millisecond)
+	saveBackups(snapshotTicker, saveAfter)
+	fmt.Println("=====================")
+}
+
+func logMessages(chEmails, chSms chan string) {
+	for {
+		select {
+			case email, ok := <- chEmails:
+				if !ok {
+					return
+				}
+				logEmail(email)
+			case sms, ok := <- chSms:
+				if !ok {
+					return
+				}
+				logSms(sms)
+		}
+	}
+}
+
+func logSms(sms string) {
+	fmt.Println("SMS:", sms)
+}
+func logEmail(email string) {
+	fmt.Println("Email:", email)
+}
+
+func concurrrentFib(n int) {
+	chInts := make(chan int)
+	go func(){
+		fibonacci(n, chInts)
+	}()
+
+	for v := range chInts {
+		fmt.Println(v)
+	}
+}
+
+func test37(n int) {
+	fmt.Printf("Printing %v numbers...\n", n)
+	concurrrentFib(n)
+	fmt.Println("==========================================")
+}
+
+func fibonacci(n int, ch chan int) {
+	x, y := 0, 1
+	for i := 0; i < n; i++ {
+		ch <- x
+		x, y = y, x + y
+		time.Sleep(time.Microsecond * 10)
+	}
+	close(ch)
+}
+
+func countReports(numSentCh chan int) int {
+	total := 0
+
+	for {
+		numSent, ok := <- numSentCh
+		if !ok {
+			break
+		}
+		total += numSent
+	}
+
+	return total
+}
+
+func test36(numBatches int) {
+	numSentCh := make(chan int)
+	go sendReports(numBatches, numSentCh)
+
+	fmt.Println("Start counting...")
+	numReports := countReports(numSentCh)
+	fmt.Printf("%v reports sent!\n", numReports)
+	fmt.Println("=========================================")
+}
+
+func sendReports(numBatches int, ch chan int) {
+	for i := 0; i < numBatches; i++ {
+		numReports := i*23 + 32%17
+		ch <- numReports
+		fmt.Printf("Sent batch of %v reports\n", numReports)
+		time.Sleep(time.Microsecond * 100)
+	}
+	close(ch)
+}
+
+func addEmailsToQueue(emails []string) chan string {
+	emailsToSend := make(chan string, len(emails))
+	for _, email := range emails {
+		emailsToSend <- email
+	}
+
+	return emailsToSend
+}
+
+func sendEmails(batchSize int, ch chan string) {
+	for i := 0; i < batchSize; i++ {
+		email := <-ch
+		fmt.Println("Sending email:", email)
+	}
+}
+
+func test35(emails ...string) {
+	fmt.Printf("Adding %v emails to queue...\n", len(emails))
+	ch := addEmailsToQueue(emails)
+	fmt.Println("Sending emails...")
+	sendEmails(len(emails), ch)
+	fmt.Println("=======================================")
+}
+
+func waitForDBs(numDBs int, dbChan chan struct{}) {
+	for i := 0; i < numDBs; i++ {
+		<- dbChan
+	}
+}
+
+func test34(numDBs int) {
+	dbChan := getDatabasesChannel(numDBs)
+	fmt.Printf("Waiting for %v databases...\n", numDBs)
+	waitForDBs(numDBs, dbChan)
+	fmt.Println("All databases are online!")
+	fmt.Println("=========================================")
+	time.Sleep(time.Microsecond * 2500)
+}
+
+func getDatabasesChannel(numDBs int) chan struct{}{
+	ch := make(chan struct{})
+	go func() {
+		for i := 0; i < numDBs; i++ {
+			ch <- struct{}{}
+			fmt.Printf("Database %v is online\n", i + 1)
+		}
+	}()
+
+	return ch
+}
+
+func sendEmail(message string) {
+	msgChan := make(chan string)
+	go func() {
+		time.Sleep(time.Millisecond * 10)
+		response := fmt.Sprintf("Email received: '%s'\n", message)
+		msgChan <- response
+	}()
+	fmt.Printf("Email sent: '%s'\n", message)
+	msg := <- msgChan
+	fmt.Println(msg)
+}
+
+func test33(message string) {
+	defer fmt.Println("============================")
+	sendEmail(message)
 }
 
 func test32(e *email3, newMessage string) {
